@@ -5,4 +5,8 @@ class CANMotorController{
     var id: Int = 0
     var percent_output: Double = 0.0
     var inverted: Int = 0
+
+    override fun toString(): String{
+        return percent_output.toString()
+    }
 }

@@ -9,60 +9,79 @@ import java.net.Socket
 class Network {
     companion object {
         val GSON: Gson = GsonBuilder().setPrettyPrinting().serializeNulls().create()
+        const val JSON_PACKET_SUFFIX = '\u001B'
         const val HOST = "localhost"
-        const val PORT = 11001
+        const val RECEIVE_PORT = 11001
+        const val TRANSMIT_PORT = 11000
 
-        fun deserialize(input: String){
+        private fun deserialize(input: String) {
             RobotOutputsManager.instance = GSON.fromJson<RobotOutputs>(input, RobotOutputs::class.java)
         }
-    }
 
-    private class ReceiveDataThread: Thread(){
-        override fun run(){
-            try{
-                var client: Socket? = null
-                while(client == null){
-                    client = Socket(HOST,PORT)
-                    println("Connecting...")
-                }
-                println("Connected")
+        private fun serialize(): String {
+            return GSON.toJson(RobotInputsManager.instance)
+        }
 
-                val reader = BufferedReader(InputStreamReader(client.getInputStream()))
-                var char: Char
-                var message = ""
-                while(true) {
-                    if (reader.ready()) {
-                        val received: Int? = reader.read()
+        private class ReceiveDataThread : Thread() {
+            override fun run() {
+                try {
+                    var client: Socket? = null
+                    while (client == null) {
+                        client = Socket(HOST, RECEIVE_PORT)
+                        println("Connecting...")
+                    }
+                    println("Connected")
 
-                        if (received == null) {
-                            println("Empty")
-                        } else {
-                            char = received.toChar()
-                            if(char == '\u001B'){
-                                deserialize(message)
-                                message = ""
-                                continue
+                    val reader = BufferedReader(InputStreamReader(client.getInputStream()))
+                    var char: Char
+                    var message = ""
+                    var received: Int?
+                    while (true) {
+                        if (reader.ready()) {
+                            received = reader.read()
+
+                            if (received != null) {
+                                char = received.toChar()
+                                if (char == JSON_PACKET_SUFFIX) {
+                                    deserialize(message)
+                                    message = ""
+                                    continue
+                                }
+                                message = message.plus(char.toString())
                             }
-                            message = message.plus(char.toString())
                         }
                     }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
-            } catch (e: Exception){
-                println(e.message)
             }
         }
-    }
 
-    fun startReceiver(){
-        val thread = ReceiveDataThread()
-        thread.start()
-    }
+        private class SendDataThread : Thread() {
+            override fun run() {
+                try {
+                    var server: Socket? = null
+                    while (server == null) {
+                        server = Socket(HOST, TRANSMIT_PORT)
+                        println("Connecting...")
+                    }
+                    println("Connected")
 
-    fun sendData(input: String){
+                    //TODO
+                } catch (e: Exception) {
+                    println(e.message)
+                }
+            }
+        }
 
-    }
+        fun startReceiver() {
+            val thread = ReceiveDataThread()
+            thread.start()
+        }
 
-    fun serialize(): String{
-        return GSON.toJson(RobotInputsManager.instance)
+        fun startTransmitter() {
+            val thread = ReceiveDataThread()
+            thread.start()
+        }
     }
 }
