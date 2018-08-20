@@ -2,7 +2,6 @@ package frontend
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import javafx.stage.Stage
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.Socket
@@ -19,20 +18,21 @@ class Network {
     }
 
     private class ReceiveDataThread: Thread(){
-        public override fun run(){
+        override fun run(){
             try{
                 var client: Socket? = null
                 while(client == null){
                     client = Socket(HOST,PORT)
-                    println("Connecting")
+                    println("Connecting...")
                 }
+                println("Connected")
 
-                var reader = BufferedReader(InputStreamReader(client.getInputStream()))
+                val reader = BufferedReader(InputStreamReader(client.getInputStream()))
                 var char: Char
                 var message = ""
                 while(true) {
                     if (reader.ready()) {
-                        var received: Int? = reader.read()
+                        val received: Int? = reader.read()
 
                         if (received == null) {
                             println("Empty")
@@ -53,12 +53,9 @@ class Network {
         }
     }
 
-    fun receiveData(){
+    fun startReceiver(){
         val thread = ReceiveDataThread()
         thread.start()
-        while(true){
-            println("Read out: ${GSON.toJson(RobotOutputsManager.instance)}")
-        }
     }
 
     fun sendData(input: String){
@@ -68,11 +65,4 @@ class Network {
     fun serialize(): String{
         return GSON.toJson(RobotInputsManager.instance)
     }
-}
-
-fun main(args: Array<String>){
-    //println("Emulator Frontend Started")
-    //var a = Network()
-    //a.receiveData()
-    GUI.main(args)
 }
