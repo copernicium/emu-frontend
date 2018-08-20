@@ -2,6 +2,7 @@ package frontend
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import javafx.stage.Stage
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.Socket
@@ -70,7 +71,8 @@ class Network {
 }
 
 fun main(args: Array<String>){
-    println("Emulator Frontend Started")
-    var a = Network()
-    a.receiveData()
+    //println("Emulator Frontend Started")
+    //var a = Network()
+    //a.receiveData()
+    GUI.main(args)
 }
